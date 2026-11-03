@@ -26,7 +26,7 @@
   <script type="text/babel">
     const { useState } = React;
 
-    // Lightweight Native SVG Icon Components (eliminates Lucide UMD forwardRef dependency errors)
+    // Native SVG Icon Components
     const FileText = ({ className = "w-5 h-5" }) => (
       <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
     );
@@ -75,6 +75,9 @@
     const Copy = ({ className = "w-5 h-5" }) => (
       <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
     );
+    const Key = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+    );
     const Check = ({ className = "w-5 h-5" }) => (
       <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
     );
@@ -97,7 +100,6 @@
       <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
     );
 
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'news-auditor-gemini-um';
     const apiKey = ""; 
 
     // Daftar SDGs 1-17
@@ -164,6 +166,10 @@
     };
 
     function App() {
+      // State Gemini API Key dengan Auto-load dari LocalStorage
+      const [userApiKey, setUserApiKey] = useState(() => localStorage.getItem('gemini_api_key_um') || '');
+      const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+
       // State Input Utama
       const [uraian, setUraian] = useState("");
       
@@ -247,25 +253,11 @@
         });
       };
 
-      // Safe Clipboard Copy Function
+      // Fungsi Copy ke Clipboard
       const copyToClipboard = (text) => {
-        if (navigator.clipboard && window.isSecureContext) {
-          navigator.clipboard.writeText(text).then(() => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-          }).catch(() => fallbackCopy(text));
-        } else {
-          fallbackCopy(text);
-        }
-      };
-
-      const fallbackCopy = (text) => {
         const textArea = document.createElement("textarea");
         textArea.value = text;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-999999px";
         document.body.appendChild(textArea);
-        textArea.focus();
         textArea.select();
         try {
           document.execCommand('copy');
@@ -274,9 +266,7 @@
         } catch (err) {
           console.error('Gagal menyalin teks', err);
         }
-        if (document.body.contains(textArea)) {
-          document.body.removeChild(textArea);
-        }
+        document.body.removeChild(textArea);
       };
 
       // Konversi format tanggal input YYYY-MM-DD ke variasi jurnalisme
@@ -433,7 +423,7 @@
         return finalHtml;
       };
 
-      // Fungsi download .doc
+      // Fungsi download dalam format .doc (Microsoft Word)
       const downloadAsDoc = () => {
         if (!beritaHasil) return;
         
@@ -475,15 +465,66 @@
             </xml>
             <![endif]-->
             <style>
-              body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #1a1a1a; margin: 1in; }
-              h1 { font-family: 'Times New Roman', serif; color: #0c4a6e; font-size: 16pt; margin-bottom: 12pt; border-bottom: 2px solid #059669; padding-bottom: 6pt; text-align: center; }
-              h2 { font-family: 'Arial', sans-serif; color: #0f766e; font-size: 11pt; margin-top: 18pt; margin-bottom: 6pt; border-bottom: 1px solid #cbd5e1; padding-bottom: 3pt; }
-              p { font-size: 11pt; margin-bottom: 10pt; text-align: justify; }
-              .meta-table { width: 100%; border-collapse: collapse; margin-bottom: 20pt; font-size: 9.5pt; }
-              .meta-table th, .meta-table td { border: 1px solid #cbd5e1; padding: 6pt; text-align: left; }
-              .meta-table th { background-color: #f1f5f9; color: #1e293b; font-weight: bold; }
-              .legend-container { background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; margin-bottom: 20px; border-radius: 4px; }
-              .footer-note { margin-top: 30pt; font-size: 8pt; color: #64748b; text-align: center; border-top: 1px solid #cbd5e1; padding-top: 6pt; }
+              body { 
+                font-family: 'Arial', sans-serif; 
+                line-height: 1.6; 
+                color: #1a1a1a; 
+                margin: 1in; 
+              }
+              h1 { 
+                font-family: 'Times New Roman', serif; 
+                color: #0c4a6e; 
+                font-size: 16pt; 
+                margin-bottom: 12pt; 
+                border-bottom: 2px solid #059669; 
+                padding-bottom: 6pt; 
+                text-align: center;
+              }
+              h2 { 
+                font-family: 'Arial', sans-serif; 
+                color: #0f766e; 
+                font-size: 11pt; 
+                margin-top: 18pt; 
+                margin-bottom: 6pt; 
+                border-bottom: 1px solid #cbd5e1;
+                padding-bottom: 3pt;
+              }
+              p { 
+                font-size: 11pt; 
+                margin-bottom: 10pt; 
+                text-align: justify; 
+              }
+              .meta-table { 
+                width: 100%; 
+                border-collapse: collapse; 
+                margin-bottom: 20pt; 
+                font-size: 9.5pt;
+              }
+              .meta-table th, .meta-table td { 
+                border: 1px solid #cbd5e1; 
+                padding: 6pt; 
+                text-align: left; 
+              }
+              .meta-table th { 
+                background-color: #f1f5f9; 
+                color: #1e293b;
+                font-weight: bold;
+              }
+              .legend-container {
+                background-color: #f8fafc;
+                border: 1px solid #e2e8f0;
+                padding: 10px;
+                margin-bottom: 20px;
+                border-radius: 4px;
+              }
+              .footer-note {
+                margin-top: 30pt;
+                font-size: 8pt;
+                color: #64748b;
+                text-align: center;
+                border-top: 1px solid #cbd5e1;
+                padding-top: 6pt;
+              }
             </style>
           </head>
           <body>
@@ -597,7 +638,15 @@
             ${rawContent
               .split('\n\n')
               .map(section => {
-                const headings = ['Pendahuluan', 'Tujuan', 'Metodologi', 'Hasil', 'Kontribusi SDG', 'Tantangan dan Rekomendasi'];
+                const headings = [
+                  'Pendahuluan', 
+                  'Tujuan', 
+                  'Metodologi', 
+                  'Hasil', 
+                  'Kontribusi SDG', 
+                  'Tantangan dan Rekomendasi'
+                ];
+                
                 let matchedHeading = headings.find(h => section.startsWith(h));
                 if (matchedHeading) {
                   const bodyText = section.substring(matchedHeading.length).trim();
@@ -628,8 +677,23 @@
         URL.revokeObjectURL(url);
       };
 
+      // Save API Key ke LocalStorage
+      const saveApiKey = (key) => {
+        const trimmed = key.trim();
+        setUserApiKey(trimmed);
+        localStorage.setItem('gemini_api_key_um', trimmed);
+      };
+
       // Call Gemini API
       const generateBeritaDenganGemini = async () => {
+        const effectiveApiKey = userApiKey.trim() || apiKey;
+
+        if (!effectiveApiKey) {
+          setErrorMsg("Harap masukkan Gemini API Key terlebih dahulu melalui menu di header!");
+          setShowApiKeyModal(true);
+          return;
+        }
+
         if (!uraian.trim()) {
           setErrorMsg("Harap masukkan uraian atau narasi kegiatan singkat terlebih dahulu!");
           return;
@@ -739,7 +803,7 @@ Silakan deteksi Target SDG secara dinamis, integrasikan seluruh parameter fisik 
         while (retries > 0 && !success) {
           try {
             const response = await fetch(
-              `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`,
+              `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${effectiveApiKey}`,
               {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -751,19 +815,22 @@ Silakan deteksi Target SDG secara dinamis, integrasikan seluruh parameter fisik 
               }
             );
 
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            if (!response.ok) {
+              const errData = await response.json().catch(() => ({}));
+              throw new Error(errData.error?.message || `HTTP error! status: ${response.status}`);
+            }
             const data = await response.json();
             const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
             if (rawText) {
               responseData = JSON.parse(rawText);
               success = true;
             } else {
-              throw new Error("Respon kosong");
+              throw new Error("Respon kosong dari AI");
             }
           } catch (error) {
             retries--;
             if (retries === 0) {
-              setErrorMsg("Gagal menghubungi Gemini AI. Silakan periksa koneksi Anda.");
+              setErrorMsg(`Gagal memproses data: ${error.message || 'Periksa API Key atau koneksi Anda.'}`);
               setLoading(false);
               return;
             }
@@ -834,7 +901,18 @@ Silakan deteksi Target SDG secara dinamis, integrasikan seluruh parameter fisik 
                   <p className="text-xs text-emerald-200 mt-0.5">Generator & Evaluator Berita Berbasis Bukti THE dengan Otomatisasi Parameter Cerdas</p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2 items-center">
+                <button
+                  onClick={() => setShowApiKeyModal(true)}
+                  className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 border cursor-pointer ${
+                    userApiKey 
+                      ? 'bg-emerald-900/60 text-emerald-300 border-emerald-500/50 hover:bg-emerald-800' 
+                      : 'bg-amber-500/20 text-amber-300 border-amber-400/50 hover:bg-amber-500/30 animate-pulse'
+                  }`}
+                >
+                  {Key && <Key className="w-4 h-4 text-amber-300" />}
+                  <span>{userApiKey ? 'API Key Terpasang' : 'Set Gemini API Key'}</span>
+                </button>
                 <button 
                   onClick={loadTemplateDemo}
                   className="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 border border-emerald-600 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 text-emerald-50 shadow-sm cursor-pointer"
@@ -857,6 +935,57 @@ Silakan deteksi Target SDG secara dinamis, integrasikan seluruh parameter fisik 
               </div>
             </div>
           </header>
+
+          {/* MODAL INPUT API KEY */}
+          {showApiKeyModal && (
+            <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 bg-amber-100 rounded-xl text-amber-700">
+                    {Key && <Key className="w-6 h-6" />}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900">Pengaturan Gemini API Key</h3>
+                    <p className="text-xs text-slate-500">Kunci ini tersimpan aman di browser Anda (LocalStorage)</p>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+                  Agar aplikasi dapat bekerja saat di-host di GitHub Pages tanpa mengekspos API Key rahasia ke repositori publik, masukkan API Key Google Gemini AI Anda di bawah ini:
+                </p>
+
+                <div className="space-y-3 mb-5">
+                  <input
+                    type="password"
+                    value={userApiKey}
+                    onChange={(e) => saveApiKey(e.target.value)}
+                    placeholder="AIzaSy..."
+                    className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+                  />
+                  <div className="flex items-center justify-between text-[11px] text-slate-500">
+                    <span>Belum punya API Key?</span>
+                    <a 
+                      href="https://aistudio.google.com/app/apikey" 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="text-emerald-600 hover:underline font-bold"
+                    >
+                      Dapatkan di Google AI Studio →
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => setShowApiKeyModal(false)}
+                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
+                  >
+                    Simpan & Tutup
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* WORKSPACE UTAMA */}
           <main className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
