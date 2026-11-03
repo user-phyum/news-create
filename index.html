@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Audit & Pembuat Berita SDGs UM</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Font Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- React & React DOM Babel setup for single-file browser execution -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // Lightweight Native SVG Icon Components (eliminates Lucide UMD forwardRef dependency errors)
+    const FileText = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+    );
+    const CheckSquare = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    );
+    const Cpu = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M3 9h2m-2 6h2m14-6h2m-2 6h2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>
+    );
+    const Sparkles = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+    );
+    const Award = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15l-2 5l9-5m-14 0l9 5l-2-5M12 3a6 6 0 100 12 6 6 0 000-12z" /></svg>
+    );
+    const Calendar = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 3V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+    );
+    const Users = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+    );
+    const Clock = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    );
+    const MapPin = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+    );
+    const Globe = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M3.6 9h16.8M3.6 15h16.8M12 3a15.3 15.3 0 014 9 15.3 15.3 0 01-4 9 15.3 15.3 0 01-4-9 15.3 15.3 0 014-9z" /></svg>
+    );
+    const BookOpen = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+    );
+    const Layers = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0l-7 7m7-7l-7-7" /></svg>
+    );
+    const CheckCircle = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    );
+    const AlertTriangle = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+    );
+    const RotateCcw = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+    );
+    const Copy = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+    );
+    const Check = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+    );
+    const TrendingUp = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+    );
+    const FileCheck = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+    );
+    const FileDown = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+    );
+    const Info = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    );
+    const MessageSquare = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+    );
+    const Tag = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+    );
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'news-auditor-gemini-um';
+    const apiKey = ""; 
+
+    // Daftar SDGs 1-17
+    const sdgList = [
+      { id: 1, name: "Tanpa Kemiskinan (No Poverty)" },
+      { id: 2, name: "Tanpa Kelaparan (Zero Hunger)" },
+      { id: 3, name: "Kehidupan Sehat dan Sejahtera (Good Health & Well-being)" },
+      { id: 4, name: "Pendidikan Berkualitas (Quality Education)" },
+      { id: 5, name: "Kesetaraan Gender (Gender Equality)" },
+      { id: 6, name: "Air Bersih dan Sanitasi Layak (Clean Water & Sanitation)" },
+      { id: 7, name: "Energi Bersih dan Terjangkau (Affordable & Clean Energy)" },
+      { id: 8, name: "Pekerjaan Layak dan Pertumbuhan Ekonomi (Decent Work & Economic Growth)" },
+      { id: 9, name: "Industri, Inovasi, dan Infrastruktur (Industry, Innovation & Infrastructure)" },
+      { id: 10, name: "Berkurangnya Kesenjangan (Reduced Inequalities)" },
+      { id: 11, name: "Kota dan Permukiman Berkelanjutan (Sustainable Cities & Communities)" },
+      { id: 12, name: "Konsumsi dan Produksi yang Bertanggung Jawab (Responsible Consumption & Production)" },
+      { id: 13, name: "Penanganan Perubahan Iklim (Climate Action)" },
+      { id: 14, name: "Ekosistem Lautan (Life Below Water)" },
+      { id: 15, name: "Ekosistem Daratan (Life on Land)" },
+      { id: 16, name: "Perdamaian, Keadilan, dan Kelembagaan yang Tangguh (Peace, Justice & Strong Institutions)" },
+      { id: 17, name: "Kemitraan untuk Mencapai Tujuan (Partnerships for the Goals)" }
+    ];
+
+    // Mapping Kata Kunci Resmi per SDG
+    const sdgKeywordsMap = {
+      1: ["Bantuan keuangan", "program pengentasan kemiskinan", "dukungan masyarakat", "beasiswa", "bantuan ekonomi", "pengurangan kemiskinan", "kesetaraan pendapatan", "perlindungan sosial", "akses kebutuhan dasar"],
+      2: ["Ketahanan pangan", "pengurangan limbah makanan", "pertanian berkelanjutan", "program nutrisi mahasiswa", "bank makanan", "keamanan gizi", "pertanian komunitas", "ketahanan pertanian"],
+      3: ["Layanan kesehatan", "dukungan kesehatan mental", "kesehatan masyarakat", "layanan kesehatan preventif", "program kesejahteraan kampus", "akses layanan kesehatan", "pencegahan penyakit", "kesetaraan kesehatan"],
+      4: ["Pendidikan inklusif", "beasiswa", "akses pembelajaran", "kemitraan pendidikan", "kesetaraan pendidikan", "pembelajaran sepanjang hayat", "pelatihan guru", "pendidikan terjangkau", "sumber daya pendidikan"],
+      5: ["Keseimbangan gender", "anti-diskriminasi", "kesempatan setara", "representasi gender", "pemberdayaan perempuan", "kebijakan dukungan gender", "kesetaraan gender", "kepemimpinan inklusif", "pencegahan kekerasan"],
+      6: ["Akses air bersih", "fasilitas sanitasi", "konservasi air", "pengelolaan limbah", "edukasi air bersih", "promosi higiene", "air minum aman", "pencegahan pencemaran", "kualitas air"],
+      7: ["Energi terbarukan", "efisiensi energi", "energi berkelanjutan", "pengurangan jejak karbon", "inisiatif hijau", "transisi energi", "tenaga surya", "konservasi energi", "teknologi ramah lingkungan"],
+      8: ["Pekerjaan layak", "program magang", "inklusi ekonomi", "program kerja mahasiswa", "lapangan kerja lokal", "upah layak", "hak tenaga kerja", "ketenagakerjaan pemuda"],
+      9: ["Infrastruktur berkelanjutan", "inovasi", "penelitian dan pengembangan", "bangunan hijau", "ketahanan industri", "teknologi cerdas", "konstruksi berkelanjutan", "kemitraan industri", "pendanaan riset"],
+      10: ["Akses fasilitas", "anti-diskriminasi", "inklusi sosial", "kelompok rentan", "inisiatif keberagaman", "keadilan sosial", "kesetaraan pendapatan", "inklusi sosial", "kebijakan adil"],
+      11: ["Keberlanjutan perkotaan", "kesiapsiagaan bencana", "perencanaan kampus", "ruang terbuka hijau", "inklusivitas komunitas", "transportasi publik", "perumahan terjangkau", "ketahanan komunitas", "pengelolaan limbah"],
+      12: ["Konservasi sumber daya", "daur ulang", "pengadaan berkelanjutan", "pengurangan limbah", "produksi bertanggung jawab", "praktik ramah lingkungan", "sumber berkelanjutan", "siklus hidup produk", "dampak lingkungan"],
+      13: ["Edukasi perubahan iklim", "pengurangan emisi", "rencana keberlanjutan", "ketahanan iklim", "netralitas karbon", "adaptasi iklim", "pengurangan gas rumah kaca", "riset iklim", "offset karbon"],
+      14: ["Konservasi laut", "pengurangan pencemaran laut", "perikanan berkelanjutan", "keanekaragaman hayati laut", "edukasi ekosistem laut", "kesehatan laut", "pengurangan plastik", "perlindungan terumbu karang", "ekosistem laut"],
+      15: ["Keanekaragaman hayati", "konservasi lingkungan", "ruang hijau kampus", "reboisasi", "restorasi lahan", "perlindungan habitat", "konservasi satwa liar", "jasa ekosistem", "penghijauan"],
+      16: ["Tata kelola", "kebebasan akademik", "anti-korupsi", "keadilan masyarakat", "kebijakan etis", "integritas institusi", "pembangunan perdamaian", "akses keadilan", "hak asasi manusia"],
+      17: ["Kemitraan global", "berbagi sumber daya", "kolaborasi berkelanjutan", "pertukaran pengetahuan", "aksi kolektif", "kerja sama internasional", "penguatan kapasitas", "dukungan pendanaan", "kemitraan multi-pihak"]
+    };
+
+    // Konfigurasi warna highlight berbeda untuk setiap parameter checklist
+    const highlightConfig = {
+      pelaksana: { bg: '#FEF08A', text: '#713F12', border: '#FDE047', label: 'Pelaksana' },
+      prodi: { bg: '#CCFBF1', text: '#115E59', border: '#99F6E4', label: 'Prodi' },
+      departemen: { bg: '#D1FAE5', text: '#065F46', border: '#A7F3D0', label: 'Departemen' },
+      fakultas: { bg: '#CFFAFE', text: '#155E75', border: '#99F6E4', label: 'Fakultas' },
+      tanggal: { bg: '#FFEDD5', text: '#9A3412', border: '#FED7AA', label: 'Rentang Waktu' },
+      jmlPelaksana: { bg: '#FCE7F3', text: '#9D174D', border: '#FBCFE8', label: 'Jml Pelaksana' },
+      jmlPeserta: { bg: '#FFE4E6', text: '#9F1239', border: '#FECDD3', label: 'Jml Peserta' },
+      serviceHours: { bg: '#F2F2F2', text: '#4B5563', border: '#D1D5DB', label: 'Durasi/Layanan' },
+      beneficiaries: { bg: '#DBEAFE', text: '#1E40AF', border: '#BFDBFE', label: 'Penerima Manfaat' },
+      location: { bg: '#FEE2E2', text: '#991B1B', border: '#FCA5A5', label: 'Lokasi' },
+      collaborator: { bg: '#E0E7FF', text: '#3730A3', border: '#C7D2FE', label: 'Kolaborator' },
+      institusi: { bg: '#F5F5F4', text: '#292524', border: '#E7E5E4', label: 'Institusi Kolaborator' },
+      sdg: { bg: '#FEF3C7', text: '#92400E', border: '#FCD34D', label: 'SDG Utama' },
+      targetSdg: { bg: '#E0F2FE', text: '#0369A1', border: '#bae6fd', label: 'Target SDG Spesifik' },
+      namaKutipan: { bg: '#FAE8FF', text: '#86198F', border: '#F5D0FE', label: 'Pemberi Kutipan' },
+      isiKutipan: { bg: '#ECFCCB', text: '#3F6212', border: '#D9F99D', label: 'Kutipan Langsung' }, 
+      kataKunciSdg: { bg: '#EDE9FE', text: '#5B21B6', border: '#DDD6FE', label: 'Kata Kunci SDG' }
+    };
+
+    function App() {
+      // State Input Utama
+      const [uraian, setUraian] = useState("");
+      
+      // State Kriteria Checklist Dasar
+      const [kriteria, setKriteria] = useState({
+        pelaksana: { aktif: true, value: "Departemen Teknik Sipil" },
+        prodi: { aktif: true, value: "S1 Pendidikan Teknik Bangunan" },
+        departemen: { aktif: true, value: "Teknik Sipil" },
+        fakultas: { aktif: true, value: "Fakultas Teknik" },
+        sdgs: { aktif: true, selected: [4] },
+        tglMulai: { aktif: true, value: "2026-05-10" },
+        tglSelesai: { aktif: true, value: "2026-05-12" },
+        jmlPelaksana: { aktif: true, value: "12 dosen dan 8 mahasiswa" },
+        jmlPeserta: { aktif: true, value: "85 guru SMK se-Jawa Timur" },
+        serviceHours: { aktif: true, value: "32 jam pelatihan" },
+        beneficiaries: { aktif: true, value: "Guru produktif SMK bidang konstruksi" },
+        location: { aktif: true, value: "Gedung kuliah H5 Kampus Pusat UM, Malang" },
+        collaborator: { aktif: true, value: "Dr. Kenji Tanaka", institusi: "Osaka University, Jepang" },
+        pemberiKutipan: { 
+          aktif: true, 
+          mode: "manual",
+          nama: "Prof. Dr. Suyono, M.Pd.", 
+          afiliasi: "Wakil Rektor I Universitas Negeri Malang", 
+          kutipan: "Pelatihan konstruksi hijau ini adalah langkah konkret UM dalam mentransfer teknologi bersih ke tingkat SMK vokasi guna mewujudkan SDGs." 
+        }
+      });
+
+      // State Kata Kunci Terpilih
+      const [selectedKeywords, setSelectedKeywords] = useState(["Pelatihan guru", "Kemitraan pendidikan", "Pendidikan terjangkau"]);
+
+      // State Output & UI
+      const [loading, setLoading] = useState(false);
+      const [errorMsg, setErrorMsg] = useState("");
+      const [beritaHasil, setBeritaHasil] = useState("");
+      const [auditHasil, setAuditHasil] = useState(null);
+      const [deduksiHasil, setDeduksiHasil] = useState(null);
+      const [copied, setCopied] = useState(false);
+
+      // Toggle kriteria aktif/nonaktif
+      const toggleKriteria = (key) => {
+        setKriteria(prev => ({
+          ...prev,
+          [key]: { ...prev[key], aktif: !prev[key].aktif }
+        }));
+      };
+
+      // Update nilai kriteria spesifik
+      const updateKriteriaValue = (key, field, value) => {
+        setKriteria(prev => ({
+          ...prev,
+          [key]: { ...prev[key], [field]: value }
+        }));
+      };
+
+      // Toggle pilihan SDG Utama
+      const toggleSdg = (id) => {
+        setKriteria(prev => {
+          const currentSelected = prev.sdgs.selected;
+          const index = currentSelected.indexOf(id);
+          let newSelected = [];
+          if (index > -1) {
+            newSelected = currentSelected.filter(item => item !== id);
+          } else {
+            newSelected = [...currentSelected, id];
+          }
+          return {
+            ...prev,
+            sdgs: { ...prev.sdgs, selected: newSelected }
+          };
+        });
+      };
+
+      // Toggle pilihan Kata Kunci SDG
+      const toggleKeyword = (kw) => {
+        setSelectedKeywords(prev => {
+          if (prev.includes(kw)) {
+            return prev.filter(item => item !== kw);
+          } else {
+            return [...prev, kw];
+          }
+        });
+      };
+
+      // Safe Clipboard Copy Function
+      const copyToClipboard = (text) => {
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          }).catch(() => fallbackCopy(text));
+        } else {
+          fallbackCopy(text);
+        }
+      };
+
+      const fallbackCopy = (text) => {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+          console.error('Gagal menyalin teks', err);
+        }
+        if (document.body.contains(textArea)) {
+          document.body.removeChild(textArea);
+        }
+      };
+
+      // Konversi format tanggal input YYYY-MM-DD ke variasi jurnalisme
+      const getTanggalVariations = (dateStr) => {
+        if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return [dateStr];
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return [dateStr];
+
+        const monthsInd = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const monthsIndShort = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+        const monthsEng = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        const day = d.getDate();
+        const year = d.getFullYear();
+        const monthInd = monthsInd[d.getMonth()];
+        const monthIndShort = monthsIndShort[d.getMonth()];
+        const monthEng = monthsEng[d.getMonth()];
+
+        return [
+          `${day} ${monthInd} ${year}`,
+          `${day} ${monthIndShort} ${year}`,
+          `${day} ${monthEng} ${year}`,
+          `${String(day).padStart(2, '0')}-${String(d.getMonth()+1).padStart(2, '0')}-${year}`,
+          dateStr
+        ];
+      };
+
+      // Memindai teks dan menyelipkan span highlight
+      const getHighlightedText = (text, isDoc = false) => {
+        if (!text) return text;
+        
+        const terms = [];
+        
+        const addTerm = (value, configKey, label) => {
+          if (value && value.trim().length > 1) {
+            terms.push({
+              value: value.trim(),
+              config: highlightConfig[configKey],
+              label: label
+            });
+          }
+        };
+
+        if (kriteria.pelaksana.aktif) addTerm(kriteria.pelaksana.value, 'pelaksana', 'Pelaksana');
+        if (kriteria.prodi.aktif) addTerm(kriteria.prodi.value, 'prodi', 'Prodi');
+        if (kriteria.departemen.aktif) addTerm(kriteria.departemen.value, 'departemen', 'Departemen');
+        if (kriteria.fakultas.aktif) addTerm(kriteria.fakultas.value, 'fakultas', 'Fakultas');
+        
+        if (kriteria.tglMulai.aktif) {
+          const startVariations = getTanggalVariations(kriteria.tglMulai.value);
+          startVariations.forEach(val => addTerm(val, 'tanggal', 'Rentang Tanggal (Mulai)'));
+        }
+        if (kriteria.tglSelesai.aktif) {
+          const endVariations = getTanggalVariations(kriteria.tglSelesai.value);
+          endVariations.forEach(val => addTerm(val, 'tanggal', 'Rentang Tanggal (Selesai)'));
+        }
+
+        if (kriteria.jmlPelaksana.aktif) addTerm(kriteria.jmlPelaksana.value, 'jmlPelaksana', 'Jumlah Pelaksana');
+        if (kriteria.jmlPeserta.aktif) addTerm(kriteria.jmlPeserta.value, 'jmlPeserta', 'Jumlah Peserta');
+        if (kriteria.serviceHours.aktif) addTerm(kriteria.serviceHours.value, 'serviceHours', 'Service Hours');
+        if (kriteria.beneficiaries.aktif) addTerm(kriteria.beneficiaries.value, 'beneficiaries', 'Penerima Manfaat');
+        if (kriteria.location.aktif) addTerm(kriteria.location.value, 'location', 'Lokasi');
+        if (kriteria.collaborator.aktif) {
+          addTerm(kriteria.collaborator.value, 'collaborator', 'Kolaborator');
+          addTerm(kriteria.collaborator.institusi, 'institusi', 'Institusi Mitra');
+        }
+
+        if (kriteria.pemberiKutipan.aktif) {
+          addTerm(kriteria.pemberiKutipan.nama, 'namaKutipan', 'Pemberi Kutipan');
+          addTerm(kriteria.pemberiKutipan.afiliasi, 'namaKutipan', 'Afiliasi Pemberi Kutipan');
+          
+          const activeQuoteText = kriteria.pemberiKutipan.mode === 'manual'
+            ? kriteria.pemberiKutipan.kutipan
+            : (deduksiHasil?.kutipanDihasilkan || "");
+
+          if (activeQuoteText && activeQuoteText.trim().length > 3) {
+            addTerm(activeQuoteText, 'isiKutipan', 'Kutipan Langsung');
+            const cleanQuoteText = activeQuoteText.replace(/["'“”]/g, '').trim();
+            if (cleanQuoteText.length > 5) {
+              addTerm(cleanQuoteText, 'isiKutipan', 'Kutipan Langsung');
+            }
+          }
+        }
+
+        if (kriteria.sdgs.aktif && kriteria.sdgs.selected) {
+          kriteria.sdgs.selected.forEach(id => {
+            const sdg = sdgList.find(s => s.id === id);
+            if (sdg) {
+              addTerm(`SDG ${id}`, 'sdg', `SDG ${id}`);
+              addTerm(`SDG ke-${id}`, 'sdg', `SDG ${id}`);
+              addTerm(`SDGs ${id}`, 'sdg', `SDG ${id}`);
+              addTerm(`SDGs ke-${id}`, 'sdg', `SDG ${id}`);
+              addTerm(sdg.name, 'sdg', `SDG ${id}`);
+              const coreName = sdg.name.split(' (')[0];
+              addTerm(coreName, 'sdg', `SDG ${id}`);
+            }
+          });
+        }
+
+        if (deduksiHasil && deduksiHasil.targetSdgDideteksi) {
+          deduksiHasil.targetSdgDideteksi.forEach(targetText => {
+            const match = targetText.match(/\b\d+\.\d+\b/);
+            if (match) {
+              const code = match[0];
+              addTerm(`Target ${code}`, 'targetSdg', `Target SDG ${code}`);
+              addTerm(code, 'targetSdg', `Target SDG ${code}`);
+            }
+          });
+        }
+
+        if (selectedKeywords && selectedKeywords.length > 0) {
+          selectedKeywords.forEach(kw => {
+            addTerm(kw, 'kataKunciSdg', `Kata Kunci SDG: ${kw}`);
+            addTerm(kw.toLowerCase(), 'kataKunciSdg', `Kata Kunci SDG: ${kw}`);
+          });
+        }
+
+        terms.sort((a, b) => b.value.length - a.value.length);
+
+        let tempText = text;
+        const placeholders = [];
+
+        terms.forEach((term, index) => {
+          const escaped = term.value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+          const regex = new RegExp(`\\b(${escaped})\\b|(${escaped})`, 'gi');
+          
+          tempText = tempText.replace(regex, (match) => {
+            const placeholder = `___PARAM_HIGHLIGHT_${index}_${placeholders.length}___`;
+            placeholders.push({
+              placeholder: placeholder,
+              match: match,
+              config: term.config,
+              label: term.label
+            });
+            return placeholder;
+          });
+        });
+
+        let finalHtml = tempText;
+        placeholders.forEach(item => {
+          const style = isDoc 
+            ? `background-color: ${item.config.bg}; color: ${item.config.text}; font-weight: bold; padding: 2px; border: 1px dashed ${item.config.border};`
+            : `background-color: ${item.config.bg}; color: ${item.config.text}; font-weight: 600; padding: 0.1rem 0.35rem; border-radius: 0.25rem; border: 1px solid ${item.config.border}; display: inline; font-size: inherit; cursor: help;`;
+          
+          const titleAttr = isDoc ? '' : ` title="Parameter: ${item.label}"`;
+          const replacement = `<span style="${style}"${titleAttr}>${item.match}</span>`;
+          finalHtml = finalHtml.replace(item.placeholder, replacement);
+        });
+
+        if (isDoc) {
+          finalHtml = finalHtml.replace(/\n/g, '<br/>');
+        }
+
+        return finalHtml;
+      };
+
+      // Fungsi download .doc
+      const downloadAsDoc = () => {
+        if (!beritaHasil) return;
+        
+        const title = beritaHasil.judul || "Berita SDGs UM";
+        const rawContent = beritaHasil.konten || "";
+        const highlightedTitle = getHighlightedText(title, true);
+        
+        const tglMulaiText = kriteria.tglMulai.aktif ? kriteria.tglMulai.value : "-";
+        const tglSelesaiText = kriteria.tglSelesai.aktif ? kriteria.tglSelesai.value : "-";
+
+        const sdgsNames = kriteria.sdgs.aktif 
+          ? kriteria.sdgs.selected.map(id => {
+              const sdg = sdgList.find(s => s.id === id);
+              return sdg ? `SDG ${sdg.id} (${sdg.name})` : `SDG ${id}`;
+            }).join(", ")
+          : "-";
+
+        let legendRows = "";
+        Object.keys(highlightConfig).forEach(key => {
+          const item = highlightConfig[key];
+          legendRows += `
+            <span style="background-color: ${item.bg}; color: ${item.text}; padding: 3px 6px; font-size: 8.5pt; font-weight: bold; border-radius: 3px; border: 1px solid ${item.border}; margin-right: 5px; display: inline-block; margin-bottom: 5px;">
+              ${item.label}
+            </span>
+          `;
+        });
+
+        const htmlContent = `
+          <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+          <head>
+            <title>${title}</title>
+            <!--[if gte mso 9]>
+            <xml>
+              <w:WordDocument>
+                <w:View>Print</w:View>
+                <w:Zoom>100</w:Zoom>
+                <w:DoNotOptimizeForBrowser/>
+              </w:WordDocument>
+            </xml>
+            <![endif]-->
+            <style>
+              body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #1a1a1a; margin: 1in; }
+              h1 { font-family: 'Times New Roman', serif; color: #0c4a6e; font-size: 16pt; margin-bottom: 12pt; border-bottom: 2px solid #059669; padding-bottom: 6pt; text-align: center; }
+              h2 { font-family: 'Arial', sans-serif; color: #0f766e; font-size: 11pt; margin-top: 18pt; margin-bottom: 6pt; border-bottom: 1px solid #cbd5e1; padding-bottom: 3pt; }
+              p { font-size: 11pt; margin-bottom: 10pt; text-align: justify; }
+              .meta-table { width: 100%; border-collapse: collapse; margin-bottom: 20pt; font-size: 9.5pt; }
+              .meta-table th, .meta-table td { border: 1px solid #cbd5e1; padding: 6pt; text-align: left; }
+              .meta-table th { background-color: #f1f5f9; color: #1e293b; font-weight: bold; }
+              .legend-container { background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; margin-bottom: 20px; border-radius: 4px; }
+              .footer-note { margin-top: 30pt; font-size: 8pt; color: #64748b; text-align: center; border-top: 1px solid #cbd5e1; padding-top: 6pt; }
+            </style>
+          </head>
+          <body>
+            <h1>${highlightedTitle}</h1>
+
+            <div class="legend-container">
+              <strong style="font-size: 9pt; color: #334155; display: block; margin-bottom: 5px;">LEGENDA HIGHLIGHT PARAMETER BERITA:</strong>
+              ${legendRows}
+            </div>
+            
+            <h2>METADATA & PARAMETER KEGIATAN SDGs</h2>
+            <table class="meta-table">
+              <tr>
+                <th style="width: 30%;">Kategori Data</th>
+                <th>Detail Informasi</th>
+              </tr>
+              <tr>
+                <td><b>Unit / Pelaksana</b></td>
+                <td><span style="background-color: ${highlightConfig.pelaksana.bg}; color: ${highlightConfig.pelaksana.text}; font-weight: bold; padding: 1px 3px;">${kriteria.pelaksana.aktif ? kriteria.pelaksana.value : '-'}</span></td>
+              </tr>
+              <tr>
+                <td><b>Program Studi</b></td>
+                <td><span style="background-color: ${highlightConfig.prodi.bg}; color: ${highlightConfig.prodi.text}; font-weight: bold; padding: 1px 3px;">${kriteria.prodi.aktif ? kriteria.prodi.value : '-'}</span></td>
+              </tr>
+              <tr>
+                <td><b>Fakultas / Departemen</b></td>
+                <td>
+                  <span style="background-color: ${highlightConfig.fakultas.bg}; color: ${highlightConfig.fakultas.text}; font-weight: bold; padding: 1px 3px;">${kriteria.fakultas.aktif ? kriteria.fakultas.value : '-'}</span> 
+                  (<span style="background-color: ${highlightConfig.departemen.bg}; color: ${highlightConfig.departemen.text}; font-weight: bold; padding: 1px 3px;">${kriteria.departemen.aktif ? kriteria.departemen.value : '-'}</span>)
+                </td>
+              </tr>
+              <tr>
+                <td><b>SDGs Utama</b></td>
+                <td>
+                  <span style="background-color: ${highlightConfig.sdg.bg}; color: ${highlightConfig.sdg.text}; font-weight: bold; padding: 1px 3px;">
+                    ${sdgsNames}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td><b>Target SDG Terdeteksi</b></td>
+                <td>
+                  <span style="background-color: ${highlightConfig.targetSdg.bg}; color: ${highlightConfig.targetSdg.text}; font-weight: bold; padding: 1px 3px;">
+                    ${deduksiHasil?.targetSdgDideteksi?.join(', ') || '-'}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td><b>Kata Kunci SDG Terpilih</b></td>
+                <td>
+                  <span style="background-color: ${highlightConfig.kataKunciSdg.bg}; color: ${highlightConfig.kataKunciSdg.text}; font-weight: bold; padding: 1px 3px;">
+                    ${selectedKeywords && selectedKeywords.length > 0 ? selectedKeywords.join(', ') : '-'}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td><b>Rentang Waktu</b></td>
+                <td>
+                  <span style="background-color: ${highlightConfig.tanggal.bg}; color: ${highlightConfig.tanggal.text}; font-weight: bold; padding: 1px 3px;">${tglMulaiText}</span> s.d 
+                  <span style="background-color: ${highlightConfig.tanggal.bg}; color: ${highlightConfig.tanggal.text}; font-weight: bold; padding: 1px 3px;">${tglSelesaiText}</span>
+                </td>
+              </tr>
+              <tr>
+                <td><b>Jumlah Partisipan</b></td>
+                <td>
+                  Pelaksana: <span style="background-color: ${highlightConfig.jmlPelaksana.bg}; color: ${highlightConfig.jmlPelaksana.text}; font-weight: bold; padding: 1px 3px;">${kriteria.jmlPelaksana.aktif ? kriteria.jmlPelaksana.value : '-'}</span> | 
+                  Peserta: <span style="background-color: ${highlightConfig.jmlPeserta.bg}; color: ${highlightConfig.jmlPeserta.text}; font-weight: bold; padding: 1px 3px;">${kriteria.jmlPeserta.aktif ? kriteria.jmlPeserta.value : '-'}</span>
+                </td>
+              </tr>
+              <tr>
+                <td><b>Service Hours & Penerima Manfaat</b></td>
+                <td>
+                  <span style="background-color: ${highlightConfig.serviceHours.bg}; color: ${highlightConfig.serviceHours.text}; font-weight: bold; padding: 1px 3px;">${kriteria.serviceHours.aktif ? kriteria.serviceHours.value : '-'}</span> 
+                  (<span style="background-color: ${highlightConfig.beneficiaries.bg}; color: ${highlightConfig.beneficiaries.text}; font-weight: bold; padding: 1px 3px;">${kriteria.beneficiaries.aktif ? kriteria.beneficiaries.value : '-'}</span>)
+                </td>
+              </tr>
+              <tr>
+                <td><b>Lokasi Kegiatan</b></td>
+                <td><span style="background-color: ${highlightConfig.location.bg}; color: ${highlightConfig.location.text}; font-weight: bold; padding: 1px 3px;">${kriteria.location.aktif ? kriteria.location.value : '-'}</span></td>
+              </tr>
+              <tr>
+                <td><b>Kolaborator Mitra</b></td>
+                <td>
+                  <span style="background-color: ${highlightConfig.collaborator.bg}; color: ${highlightConfig.collaborator.text}; font-weight: bold; padding: 1px 3px;">${kriteria.collaborator.aktif ? kriteria.collaborator.value : '-'}</span> 
+                  (<span style="background-color: ${highlightConfig.institusi.bg}; color: ${highlightConfig.institusi.text}; font-weight: bold; padding: 1px 3px;">${kriteria.collaborator.institusi}</span>)
+                </td>
+              </tr>
+              <tr>
+                <td><b>Pemberi Kutipan & Afiliasi</b></td>
+                <td>
+                  <span style="background-color: ${highlightConfig.namaKutipan.bg}; color: ${highlightConfig.namaKutipan.text}; font-weight: bold; padding: 1px 3px;">
+                    ${kriteria.pemberiKutipan.aktif ? `${kriteria.pemberiKutipan.nama} (${kriteria.pemberiKutipan.afiliasi})` : '-'}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td><b>Isi Kutipan</b></td>
+                <td>
+                  <span style="background-color: ${highlightConfig.isiKutipan.bg}; color: ${highlightConfig.isiKutipan.text}; font-style: italic; padding: 1px 3px;">
+                    "${kriteria.pemberiKutipan.aktif ? (kriteria.pemberiKutipan.mode === 'manual' ? kriteria.pemberiKutipan.kutipan : deduksiHasil?.kutipanDihasilkan) : '-'}"
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td><b>Kategori Kegiatan (Deduksi)</b></td>
+                <td>${deduksiHasil?.kategoriKegiatan || '-'}</td>
+              </tr>
+            </table>
+
+            <h2>NASKAH PUBLIKASI BERITA (TERHIGHLIGHT)</h2>
+            ${rawContent
+              .split('\n\n')
+              .map(section => {
+                const headings = ['Pendahuluan', 'Tujuan', 'Metodologi', 'Hasil', 'Kontribusi SDG', 'Tantangan dan Rekomendasi'];
+                let matchedHeading = headings.find(h => section.startsWith(h));
+                if (matchedHeading) {
+                  const bodyText = section.substring(matchedHeading.length).trim();
+                  const highlightedBody = getHighlightedText(bodyText, true);
+                  return `<h2>${matchedHeading}</h2><p>${highlightedBody}</p>`;
+                }
+                return `<p>${getHighlightedText(section, true)}</p>`;
+              })
+              .join('')}
+
+            <div class="footer-note">
+              Dokumen diunduh secara otomatis dari Portal Sistem Audit & Pembuat Berita SDGs Universitas Negeri Malang (UM).<br/>
+              Standardisasi Jurnalisme Bukti THE (Times Higher Education) Impact Rankings.
+            </div>
+          </body>
+          </html>
+        `;
+
+        const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const cleanFilename = title.replace(/[^a-z0-9]/gi, '_').substring(0, 80);
+        link.download = `${cleanFilename}_highlighted.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      };
+
+      // Call Gemini API
+      const generateBeritaDenganGemini = async () => {
+        if (!uraian.trim()) {
+          setErrorMsg("Harap masukkan uraian atau narasi kegiatan singkat terlebih dahulu!");
+          return;
+        }
+        
+        setLoading(true);
+        setErrorMsg("");
+        setBeritaHasil("");
+        setAuditHasil(null);
+        setDeduksiHasil(null);
+
+        let dataFisikText = "";
+        Object.keys(kriteria).forEach(key => {
+          const item = kriteria[key];
+          if (item && item.aktif) {
+            if (key === 'sdgs') {
+              const sdgNames = item.selected.map(id => {
+                const sdg = sdgList.find(s => s.id === id);
+                return sdg ? `SDG ${sdg.id} - ${sdg.name}` : `SDG ${id}`;
+              }).join(", ");
+              dataFisikText += `- SDGs Utama terpilih: ${sdgNames}\n`;
+            } else if (key === 'collaborator') {
+              dataFisikText += `- Kolaborator: ${item.value || ''} (${item.institusi || ''})\n`;
+            } else if (key === 'pemberiKutipan') {
+              dataFisikText += `- Nama Pemberi Kutipan: ${item.nama || ''}\n`;
+              dataFisikText += `- Afiliasi Pemberi Kutipan: ${item.afiliasi || ''}\n`;
+              dataFisikText += `- Mode Kutipan: ${item.mode}\n`;
+              if (item.mode === 'manual') {
+                dataFisikText += `- Kutipan Langsung Wajib (Sajikan secara persis): "${item.kutipan || ''}"\n`;
+              } else {
+                dataFisikText += `- Perintah Kutipan Otomatis: Buatkan sebuah kalimat kutipan/pernyataan langsung yang sangat relevan, akademis, dan profesional untuk tokoh ini sesuai dengan tujuan SDGs kegiatan tersebut.\n`;
+              }
+            } else if (typeof item === 'object' && item.value !== undefined) {
+              dataFisikText += `- ${key.charAt(0).toUpperCase() + key.slice(1)}: ${item.value}\n`;
+            }
+          }
+        });
+
+        if (selectedKeywords && selectedKeywords.length > 0) {
+          dataFisikText += `- Kata Kunci SDG yang WAJIB DITULIS secara eksak/persis di dalam naskah berita: ${selectedKeywords.map(kw => `"${kw}"`).join(', ')}\n`;
+        }
+
+        const systemPrompt = `Anda adalah seorang ahli jurnalisme sains, auditor berita pembangunan berkelanjutan (SDGs), dan spesialis pemeringkatan Times Higher Education (THE) di Universitas Negeri Malang (UM).
+
+Anda memiliki kemampuan analisis tinggi untuk MENYIMPULKAN & MERUMUSKAN aspek-aspek akademis/jurnalistik secara mandiri tanpa membebani penulis berita.
+
+Tugas Anda adalah memproses "Narasi Kegiatan Singkat" beserta "Data Fisik Kegiatan" (termasuk daftar kata kunci SDG wajib) yang dicentang aktif oleh pengguna. 
+
+MANDATORI UTAMA PENYERAPAN DATA CHECKLIST:
+Anda WAJIB memasukkan semua data dari kriteria checklist aktif ke dalam draf berita secara eksplisit, detail, presisi, dan alami. JANGAN SAMPAI ADA DATA CHECKLIST AKTIF YANG TERLEWAT! Anda harus memikirkan dan merumuskan sendiri poin-poin berikut:
+1. KATEGORI KEGIATAN: Menentukan jenis kegiatan
+2. LATAR BELAKANG MASALAH: Merumuskan latar belakang berbasis bukti (evidence-based) yang logis.
+3. TUJUAN KEGIATAN: Merumuskan tujuan strategis kegiatan.
+4. METODOLOGI: Menyusun langkah-langkah solusi/proses pelaksanaan kegiatan.
+5. HASIL AKTUAL (Wajib Minimal 2 Data Kuantitatif Berangka): Menyimpulkan minimal 2 data kuantitatif berbasis angka yang logis dan realistis.
+6. TANTANGAN: Mengidentifikasi tantangan realistis di lapangan.
+7. REKOMENDASI PEMECAHAN MASA DEPAN: Menyusun rekomendasi pemecahan strategis.
+8. NOMOR TARGET SDG SPESIFIK: Berdasarkan nomor SDG Utama yang dipilih dan narasi singkat, Anda wajib mendeteksi secara dinamis nomor target SDG spesifik yang paling relevan (misal jika SDG 4, Anda bisa mengidentifikasi Target 4.3 atau 4.7) lengkap dengan narasinya.
+9. PENYATUAN KATA KUNCI SDG WAJIB: Gunakan semua kata kunci secara eksak di dalam berita.
+10. INTEGRASI KUTIPAN LANGSUNG: Jika opsi Pemberi Kutipan aktif, selipkan kutipan langsung secara pas.
+
+ATURAN PROMPT 1: "PENGHASIL DRAFT"
+- Tuliskan draft narasi berita SDGs UM dalam Bahasa Indonesia sepanjang 300–500 kata.
+- Susun narasi berita dalam 6 bagian utama: Pendahuluan, Tujuan, Metodologi, Hasil, Kontribusi SDG, Tantangan dan Rekomendasi.
+- Format Judul: [Unit/Pelaksana] + UM + [Kegiatan/Aksi] + [Kata Kunci SDGs] + [Tujuan/Manfaat].
+
+Format respon Anda wajib berupa JSON valid dengan skema berikut:
+{
+  "judul": "Judul Berita Resmi UM Sesuai Format",
+  "konten": "Pendahuluan\n...\n\nTujuan\n...\n\nMetodologi\n...\n\nHasil\n...\n\nKontribusi SDG\n...\n\nTantangan dan Rekomendasi\n...",
+  "deduksiHasil": {
+    "kategoriKegiatan": "Kategori yang Anda tentukan",
+    "targetSdgDideteksi": ["Nomor & deskripsi Target SDG spesifik yang dideteksi secara dinamis"],
+    "latarBelakang": "Rumusan latar belakang masalah",
+    "tujuan": "Rumusan tujuan kegiatan",
+    "metodologi": "Metodologi yang dirumuskan",
+    "hasilAktual": "Dua data kuantitatif yang dirumuskan",
+    "tantangan": "Tantangan yang diidentifikasi",
+    "rekomendasi": "Rekomendasi pemecahan masa depan",
+    "kutipanDihasilkan": "Teks kalimat kutipan langsung yang Anda gunakan"
+  },
+  "audit": {
+    "skor": 95,
+    "analisis": "Analisis singkat kelayakan berita.",
+    "kriteriaTerpenuhi": ["Daftar kriteria terpenuhi"],
+    "kriteriaBelumTerpenuhi": ["Catatan verifikasi riil"],
+    "jumlahKata": 420,
+    "jumlahDataKuantitatif": 2,
+    "rekomendasi": "Saran penyempurnaan draf"
+  }
+}`;
+
+        const userQuery = `
+NARASI KEGIATAN SINGKAT DARI USER:
+"${uraian}"
+
+DATA FISIK KEGIATAN YANG WAJIB ANDA TENUN MASUK KE DALAM NARASI (DI-CHECKLIST OLEH USER):
+${dataFisikText}
+
+Silakan deteksi Target SDG secara dinamis, integrasikan seluruh parameter fisik checklist & Kata Kunci SDG terpilih di atas dengan presisi, masukkan/buatkan Kutipan Langsung tokoh tersebut secara eksak, lalu hasilkan respon JSON sesuai skema.`;
+
+        let retries = 5;
+        let delay = 1000;
+        let success = false;
+        let responseData = null;
+
+        while (retries > 0 && !success) {
+          try {
+            const response = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: userQuery }] }],
+                  systemInstruction: { parts: [{ text: systemPrompt }] },
+                  generationConfig: { responseMimeType: "application/json" }
+                })
+              }
+            );
+
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (rawText) {
+              responseData = JSON.parse(rawText);
+              success = true;
+            } else {
+              throw new Error("Respon kosong");
+            }
+          } catch (error) {
+            retries--;
+            if (retries === 0) {
+              setErrorMsg("Gagal menghubungi Gemini AI. Silakan periksa koneksi Anda.");
+              setLoading(false);
+              return;
+            }
+            await new Promise(resolve => setTimeout(resolve, delay));
+            delay *= 2;
+          }
+        }
+
+        if (success && responseData) {
+          setBeritaHasil(responseData);
+          setAuditHasil(responseData.audit);
+          setDeduksiHasil(responseData.deduksiHasil);
+        }
+        setLoading(false);
+      };
+
+      const loadTemplateDemo = () => {
+        setUraian("Departemen Teknik Sipil FT UM menyelenggarakan pelatihan kurikulum konstruksi hijau berbasis Building Information Modeling (BIM) bagi guru SMK se-Jawa Timur. Menghadirkan Dr. Kenji Tanaka dari Osaka University guna transfer teknologi material berkelanjutan. Program ini berlangsung selama 3 hari penuh di Malang.");
+        setKriteria({
+          pelaksana: { aktif: true, value: "Departemen Teknik Sipil" },
+          prodi: { aktif: true, value: "S1 Pendidikan Teknik Bangunan" },
+          departemen: { aktif: true, value: "Teknik Sipil" },
+          fakultas: { aktif: true, value: "Fakultas Teknik" },
+          sdgs: { aktif: true, selected: [4, 9, 17] },
+          tglMulai: { aktif: true, value: "2026-05-10" },
+          tglSelesai: { aktif: true, value: "2026-05-12" },
+          jmlPelaksana: { aktif: true, value: "12 dosen dan 8 mahasiswa" },
+          jmlPeserta: { aktif: true, value: "85 guru produktif SMK" },
+          serviceHours: { aktif: true, value: "32 jam pelatihan" },
+          beneficiaries: { aktif: true, value: "Guru produktif SMK bidang konstruksi" },
+          location: { aktif: true, value: "Gedung kuliah H5 Kampus Pusat UM, Malang" },
+          collaborator: { aktif: true, value: "Dr. Kenji Tanaka", institusi: "Osaka University, Jepang" },
+          pemberiKutipan: { 
+            aktif: true, 
+            mode: "manual",
+            nama: "Prof. Dr. Suyono, M.Pd.", 
+            afiliasi: "Wakil Rektor I Universitas Negeri Malang", 
+            kutipan: "Pelatihan konstruksi hijau ini adalah langkah konkret UM dalam mentransfer teknologi bersih ke tingkat SMK vokasi guna mewujudkan SDGs." 
+          }
+        });
+        setSelectedKeywords(["Pelatihan guru", "Kemitraan pendidikan", "Konstruksi berkelanjutan", "Kemitraan multi-pihak"]);
+      };
+
+      const getAvailableKeywords = () => {
+        let list = [];
+        if (kriteria.sdgs.aktif && kriteria.sdgs.selected) {
+          kriteria.sdgs.selected.forEach(sdgId => {
+            const keywords = sdgKeywordsMap[sdgId] || [];
+            keywords.forEach(kw => {
+              if (!list.includes(kw)) list.push(kw);
+            });
+          });
+        }
+        return list;
+      };
+
+      return (
+        <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
+          {/* HEADER UTAMA */}
+          <header className="bg-gradient-to-r from-teal-900 via-emerald-950 to-slate-900 text-white shadow-md py-6 px-4">
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-emerald-600/30 rounded-xl border border-emerald-400/30 backdrop-blur-sm">
+                  {Cpu && <Cpu className="w-8 h-8 text-emerald-400" />}
+                </div>
+                <div>
+                  <h1 className="text-2xl font-extrabold tracking-tight">Sistem Audit & Pembuat Berita SDGs UM</h1>
+                  <p className="text-xs text-emerald-200 mt-0.5">Generator & Evaluator Berita Berbasis Bukti THE dengan Otomatisasi Parameter Cerdas</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button 
+                  onClick={loadTemplateDemo}
+                  className="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 border border-emerald-600 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 text-emerald-50 shadow-sm cursor-pointer"
+                >
+                  {Sparkles && <Sparkles className="w-4 h-4 text-amber-300" />} Gunakan Contoh Data Kegiatan
+                </button>
+                <button 
+                  onClick={() => {
+                    setUraian("");
+                    setBeritaHasil("");
+                    setAuditHasil(null);
+                    setDeduksiHasil(null);
+                    setSelectedKeywords([]);
+                  }}
+                  className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 text-slate-300 cursor-pointer"
+                  title="Reset Semua Input"
+                >
+                  {RotateCcw && <RotateCcw className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+          </header>
+
+          {/* WORKSPACE UTAMA */}
+          <main className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            {/* PANEL KIRI: INPUT & CHECKLIST */}
+            <div className="lg:col-span-6 flex flex-col gap-6">
+              
+              {/* BAGIAN 1: URAIAN KEGIATAN */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80">
+                <div className="flex items-center gap-2 mb-2">
+                  {FileText && <FileText className="w-5 h-5 text-emerald-700" />}
+                  <h2 className="text-lg font-bold text-slate-900">1. Narasi Kegiatan Singkat</h2>
+                </div>
+                <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+                  Tuliskan draf mentah atau garis besar kegiatan Anda di sini. Gemini AI akan secara otomatis menganalisis, merumuskan latar belakang, sasaran target SDG spesifik, metodologi, data kuantitatif, tantangan, dan rekomendasi.
+                </p>
+                <textarea
+                  value={uraian}
+                  onChange={(e) => setUraian(e.target.value)}
+                  placeholder="Contoh: Departemen Teknik Sipil mengadakan pelatihan pemanfaatan inovasi teknologi bangunan berkelanjutan bagi guru SMK se-Malang Raya..."
+                  rows={5}
+                  className="w-full p-4 rounded-xl border border-slate-300 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none text-sm transition-all shadow-inner"
+                />
+              </div>
+
+              {/* BAGIAN 2: CHECKLIST PARAMETER FISIK */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80">
+                <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    {CheckSquare && <CheckSquare className="w-5 h-5 text-emerald-700" />}
+                    <h2 className="text-lg font-bold text-slate-900">2. Metadata & Parameter Fisik (Checklist)</h2>
+                  </div>
+                  <span className="text-xs bg-emerald-50 text-emerald-800 font-semibold px-2 py-1 rounded border border-emerald-100">
+                    Pencari Fakta Aktif
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Pelaksana */}
+                  <div className={`p-3 rounded-xl border transition-all ${kriteria.pelaksana.aktif ? 'bg-emerald-50/30 border-emerald-200' : 'bg-slate-50 border-slate-200 opacity-70'}`}>
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="flex items-center gap-2.5 font-bold text-sm cursor-pointer select-none">
+                        <input 
+                          type="checkbox" 
+                          checked={kriteria.pelaksana.aktif}
+                          onChange={() => toggleKriteria('pelaksana')}
+                          className="w-4 h-4 rounded text-emerald-600 border-slate-300"
+                        />
+                        <span>Unit / Pelaksana Berita</span>
+                      </label>
+                      {Award && <Award className={`w-4 h-4 ${kriteria.pelaksana.aktif ? 'text-emerald-600' : 'text-slate-400'}`} />}
+                    </div>
+                    {kriteria.pelaksana.aktif && (
+                      <input
+                        type="text"
+                        value={kriteria.pelaksana.value}
+                        onChange={(e) => updateKriteriaValue('pelaksana', 'value', e.target.value)}
+                        placeholder="Contoh: Departemen Teknik Sipil FT"
+                        className="w-full mt-2 p-2 bg-white rounded-lg border border-slate-200 text-xs focus:ring-1 focus:ring-emerald-500 outline-none"
+                      />
+                    )}
+                  </div>
+
+                  {/* Institusi Akademik */}
+                  <div className={`p-4 rounded-xl border transition-all ${kriteria.prodi.aktif || kriteria.departemen.aktif || kriteria.fakultas.aktif ? 'bg-emerald-50/30 border-emerald-200' : 'bg-slate-50 border-slate-200 opacity-70'}`}>
+                    <div className="flex items-center gap-2 mb-3">
+                      {BookOpen && <BookOpen className="w-4 h-4 text-emerald-600" />}
+                      <span className="text-sm font-bold text-slate-900">Struktur Afiliasi Akademik</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="p-2.5 bg-white rounded-lg border border-slate-200">
+                        <label className="flex items-center gap-2 text-xs font-medium cursor-pointer select-none mb-1">
+                          <input 
+                            type="checkbox" 
+                            checked={kriteria.prodi.aktif}
+                            onChange={() => toggleKriteria('prodi')}
+                            className="w-3.5 h-3.5 text-emerald-600 rounded"
+                          />
+                          <span>Program Studi</span>
+                        </label>
+                        {kriteria.prodi.aktif && (
+                          <input
+                            type="text"
+                            value={kriteria.prodi.value}
+                            onChange={(e) => updateKriteriaValue('prodi', 'value', e.target.value)}
+                            className="w-full p-1.5 bg-slate-50 border border-slate-200 rounded text-[11px] outline-none"
+                          />
+                        )}
+                      </div>
+
+                      <div className="p-2.5 bg-white rounded-lg border border-slate-200">
+                        <label className="flex items-center gap-2 text-xs font-medium cursor-pointer select-none mb-1">
+                          <input 
+                            type="checkbox" 
+                            checked={kriteria.departemen.aktif}
+                            onChange={() => toggleKriteria('departemen')}
+                            className="w-3.5 h-3.5 text-emerald-600 rounded"
+                          />
+                          <span>Departemen</span>
+                        </label>
+                        {kriteria.departemen.aktif && (
+                          <input
+                            type="text"
+                            value={kriteria.departemen.value}
+                            onChange={(e) => updateKriteriaValue('departemen', 'value', e.target.value)}
+                            className="w-full p-1.5 bg-slate-50 border border-slate-200 rounded text-[11px] outline-none"
+                          />
+                        )}
+                      </div>
+
+                      <div className="p-2.5 bg-white rounded-lg border border-slate-200">
+                        <label className="flex items-center gap-2 text-xs font-medium cursor-pointer select-none mb-1">
+                          <input 
+                            type="checkbox" 
+                            checked={kriteria.fakultas.aktif}
+                            onChange={() => toggleKriteria('fakultas')}
+                            className="w-3.5 h-3.5 text-emerald-600 rounded"
+                          />
+                          <span>Fakultas</span>
+                        </label>
+                        {kriteria.fakultas.aktif && (
+                          <input
+                            type="text"
+                            value={kriteria.fakultas.value}
+                            onChange={(e) => updateKriteriaValue('fakultas', 'value', e.target.value)}
+                            className="w-full p-1.5 bg-slate-50 border border-slate-200 rounded text-[11px] outline-none"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SDGs Utama */}
+                  <div className={`p-3 rounded-xl border transition-all ${kriteria.sdgs.aktif ? 'bg-emerald-50/30 border-emerald-200' : 'bg-slate-50 border-slate-200 opacity-70'}`}>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <label className="flex items-center gap-2.5 font-bold text-sm cursor-pointer select-none">
+                        <input 
+                          type="checkbox" 
+                          checked={kriteria.sdgs.aktif}
+                          onChange={() => toggleKriteria('sdgs')}
+                          className="w-4 h-4 rounded text-emerald-600 border-slate-300"
+                        />
+                        <span>Sustainable Development Goals (SDGs) Utama</span>
+                      </label>
+                      {Layers && <Layers className={`w-4 h-4 ${kriteria.sdgs.aktif ? 'text-emerald-600' : 'text-slate-400'}`} />}
+                    </div>
+                    
+                    {kriteria.sdgs.aktif && (
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-40 overflow-y-auto p-2 bg-white rounded-lg border border-slate-200">
+                          {sdgList.map(sdg => {
+                            const isSelected = kriteria.sdgs.selected.includes(sdg.id);
+                            return (
+                              <button
+                                key={sdg.id}
+                                type="button"
+                                onClick={() => toggleSdg(sdg.id)}
+                                className={`flex items-start text-left p-1.5 rounded text-[11px] transition-all border cursor-pointer ${
+                                  isSelected 
+                                    ? 'bg-emerald-600 border-emerald-700 text-white font-semibold' 
+                                    : 'bg-slate-50 border-transparent text-slate-700'
+                                }`}
+                              >
+                                <span className={`font-bold mr-1 ${isSelected ? 'text-white' : 'text-emerald-700'}`}>#{sdg.id}</span>
+                                <span className="line-clamp-1">{sdg.name}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Kata Kunci SDG */}
+                  {kriteria.sdgs.aktif && kriteria.sdgs.selected.length > 0 && (
+                    <div className="p-4 bg-violet-50/50 border border-violet-200/60 rounded-xl space-y-3">
+                      <div className="flex items-center gap-2 text-violet-900">
+                        {Tag && <Tag className="w-4 h-4" />}
+                        <span className="text-sm font-bold">3. Pilih Kata Kunci SDG Terpilih</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 max-h-44 overflow-y-auto p-2 bg-white rounded-lg border border-slate-200">
+                        {getAvailableKeywords().map((kw, i) => {
+                          const isSelected = selectedKeywords.includes(kw);
+                          return (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => toggleKeyword(kw)}
+                              className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-all border cursor-pointer ${
+                                isSelected
+                                  ? 'bg-violet-600 border-violet-700 text-white'
+                                  : 'bg-slate-50 text-slate-600 border-slate-200'
+                              }`}
+                            >
+                              {kw} {isSelected && '✓'}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tanggal */}
+                  <div className={`p-3 rounded-xl border transition-all ${kriteria.tglMulai.aktif || kriteria.tglSelesai.aktif ? 'bg-emerald-50/30 border-emerald-200' : 'bg-slate-50 border-slate-200 opacity-70'}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      {Calendar && <Calendar className="w-4 h-4 text-emerald-600" />}
+                      <span className="text-sm font-bold text-slate-900">Rentang Tanggal Pelaksanaan</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-2 bg-white rounded-lg border border-slate-200">
+                        <label className="flex items-center gap-1.5 text-xs font-medium cursor-pointer mb-1">
+                          <input 
+                            type="checkbox" 
+                            checked={kriteria.tglMulai.aktif}
+                            onChange={() => toggleKriteria('tglMulai')}
+                            className="w-3.5 h-3.5 text-emerald-600 rounded"
+                          />
+                          <span>Mulai</span>
+                        </label>
+                        {kriteria.tglMulai.aktif && (
+                          <input
+                            type="date"
+                            value={kriteria.tglMulai.value}
+                            onChange={(e) => updateKriteriaValue('tglMulai', 'value', e.target.value)}
+                            className="w-full p-1 bg-slate-50 border border-slate-200 rounded text-xs outline-none"
+                          />
+                        )}
+                      </div>
+                      <div className="p-2 bg-white rounded-lg border border-slate-200">
+                        <label className="flex items-center gap-1.5 text-xs font-medium cursor-pointer mb-1">
+                          <input 
+                            type="checkbox" 
+                            checked={kriteria.tglSelesai.aktif}
+                            onChange={() => toggleKriteria('tglSelesai')}
+                            className="w-3.5 h-3.5 text-emerald-600 rounded"
+                          />
+                          <span>Selesai</span>
+                        </label>
+                        {kriteria.tglSelesai.aktif && (
+                          <input
+                            type="date"
+                            value={kriteria.tglSelesai.value}
+                            onChange={(e) => updateKriteriaValue('tglSelesai', 'value', e.target.value)}
+                            className="w-full p-1 bg-slate-50 border border-slate-200 rounded text-xs outline-none"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Kutipan Tokoh */}
+                  <div className={`p-3 rounded-xl border transition-all ${kriteria.pemberiKutipan.aktif ? 'bg-emerald-50/30 border-emerald-200' : 'bg-slate-50 border-slate-200 opacity-70'}`}>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <label className="flex items-center gap-2.5 font-bold text-sm cursor-pointer select-none">
+                        <input 
+                          type="checkbox" 
+                          checked={kriteria.pemberiKutipan.aktif}
+                          onChange={() => toggleKriteria('pemberiKutipan')}
+                          className="w-4 h-4 rounded text-emerald-600 border-slate-300"
+                        />
+                        <span>Aktor & Kutipan Langsung</span>
+                      </label>
+                      {MessageSquare && <MessageSquare className={`w-4 h-4 ${kriteria.pemberiKutipan.aktif ? 'text-emerald-600' : 'text-slate-400'}`} />}
+                    </div>
+                    
+                    {kriteria.pemberiKutipan.aktif && (
+                      <div className="space-y-3 mt-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            value={kriteria.pemberiKutipan.nama}
+                            onChange={(e) => updateKriteriaValue('pemberiKutipan', 'nama', e.target.value)}
+                            placeholder="Nama Tokoh"
+                            className="w-full p-2 bg-white rounded-lg border border-slate-200 text-xs outline-none"
+                          />
+                          <input
+                            type="text"
+                            value={kriteria.pemberiKutipan.afiliasi}
+                            onChange={(e) => updateKriteriaValue('pemberiKutipan', 'afiliasi', e.target.value)}
+                            placeholder="Jabatan/Afiliasi"
+                            className="w-full p-2 bg-white rounded-lg border border-slate-200 text-xs outline-none"
+                          />
+                        </div>
+
+                        {kriteria.pemberiKutipan.mode === "manual" ? (
+                          <textarea
+                            value={kriteria.pemberiKutipan.kutipan}
+                            onChange={(e) => updateKriteriaValue('pemberiKutipan', 'kutipan', e.target.value)}
+                            placeholder="Tuliskan kalimat kutipan langsung di sini..."
+                            rows={2}
+                            className="w-full p-2 bg-white rounded-lg border border-slate-200 text-xs outline-none"
+                          />
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Tombol Action */}
+                <div className="mt-8">
+                  <button
+                    type="button"
+                    onClick={generateBeritaDenganGemini}
+                    disabled={loading}
+                    className="w-full py-4 px-6 bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-700 hover:from-emerald-700 hover:to-indigo-800 text-white rounded-xl font-bold text-base shadow-md transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50"
+                  >
+                    {loading ? (
+                      <span>Mendeduksi & Memproses Draf Berita...</span>
+                    ) : (
+                      <>
+                        {Cpu && <Cpu className="w-5 h-5 text-amber-300" />}
+                        <span>Generate & Jalankan Audit</span>
+                      </>
+                    )}
+                  </button>
+                  {errorMsg && (
+                    <div className="mt-3 p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg flex items-center gap-2">
+                      {AlertTriangle && <AlertTriangle className="w-4 h-4 text-rose-500" />}
+                      <span>{errorMsg}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* PANEL KANAN: PREVIEW & AUDIT */}
+            <div className="lg:col-span-6 flex flex-col gap-6">
+              {!beritaHasil && !loading && (
+                <div className="bg-slate-100 rounded-2xl p-8 border border-slate-200 border-dashed text-center flex flex-col items-center justify-center min-h-[500px]">
+                  {Sparkles && <Sparkles className="w-10 h-10 text-emerald-600/60 mb-4" />}
+                  <h3 className="text-slate-700 font-bold mb-1">Draf Berita & Analisis SDGs</h3>
+                  <p className="text-slate-500 text-xs max-w-md mx-auto leading-relaxed">
+                    Tentukan data dasar kegiatan di sebelah kiri, kemudian klik tombol <strong>Generate & Jalankan Audit</strong>.
+                  </p>
+                </div>
+              )}
+
+              {loading && (
+                <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 text-center flex flex-col items-center justify-center min-h-[500px]">
+                  <div className="w-12 h-12 rounded-full border-4 border-emerald-100 border-t-emerald-600 animate-spin mb-4"></div>
+                  <h3 className="text-slate-900 font-bold mb-1">Mendeduksi Parameter SDGs</h3>
+                  <p className="text-slate-500 text-xs">Menganalisis narasi dan menyusun naskah berita berstandar THE...</p>
+                </div>
+              )}
+
+              {beritaHasil && !loading && (
+                <div className="space-y-6">
+                  {/* DEDUKSI */}
+                  {deduksiHasil && (
+                    <div className="bg-gradient-to-br from-emerald-950 to-slate-900 text-white rounded-2xl p-6 shadow-md border border-emerald-800/30">
+                      <h2 className="text-sm font-bold text-emerald-100 mb-3 flex items-center gap-2">
+                        {Cpu && <Cpu className="w-4 h-4 text-emerald-400" />} Parameter Dideduksi AI
+                      </h2>
+                      <div className="space-y-3 text-xs">
+                        <div>
+                          <span className="text-[10px] text-emerald-300 font-bold uppercase block">Kategori Kegiatan:</span>
+                          <p className="text-slate-200 bg-emerald-900/40 p-2 rounded">{deduksiHasil.kategoriKegiatan}</p>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-emerald-300 font-bold uppercase block">Target SDG Dideteksi:</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {deduksiHasil.targetSdgDideteksi?.map((t, i) => (
+                              <span key={i} className="bg-indigo-950 border border-indigo-700/50 p-1.5 rounded text-slate-200 text-[11px] block w-full">{t}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* AUDIT THE */}
+                  {auditHasil && (
+                    <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-md border border-slate-800">
+                      <div className="flex justify-between items-center mb-3 border-b border-white/10 pb-2">
+                        <span className="text-sm font-bold flex items-center gap-2">
+                          {CheckCircle && <CheckCircle className="w-4 h-4 text-emerald-400" />} Kepatuhan Standar THE
+                        </span>
+                        <span className="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded text-xs font-bold">Skor: {auditHasil.skor}/100</span>
+                      </div>
+                      <p className="text-xs text-slate-300 italic mb-3">"{auditHasil.analisis}"</p>
+                    </div>
+                  )}
+
+                  {/* BERITA UTUH */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                      <span className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        {FileCheck && <FileCheck className="w-4 h-4 text-emerald-700" />} Draf Berita Terformat
+                      </span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => copyToClipboard(`${beritaHasil.judul}\n\n${beritaHasil.konten}`)}
+                          className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded text-slate-600 text-xs flex items-center gap-1 cursor-pointer"
+                        >
+                          {Copy && <Copy className="w-3.5 h-3.5" />} {copied ? 'Tersalin!' : 'Salin'}
+                        </button>
+                        <button
+                          onClick={downloadAsDoc}
+                          className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                        >
+                          {FileDown && <FileDown className="w-3.5 h-3.5" />} Download .doc
+                        </button>
+                      </div>
+                    </div>
+
+                    <h1 
+                      className="text-base font-extrabold text-slate-900 leading-snug border-l-4 border-emerald-600 pl-2.5 mb-4"
+                      dangerouslySetInnerHTML={{ __html: getHighlightedText(beritaHasil.judul, false) }}
+                    />
+
+                    <div 
+                      className="text-xs text-slate-700 leading-relaxed space-y-4 whitespace-pre-line bg-slate-50 p-4 rounded-xl border border-slate-100 font-normal mb-4"
+                      dangerouslySetInnerHTML={{ __html: getHighlightedText(beritaHasil.konten, false) }}
+                    />
+
+                    {/* Legenda Highlight */}
+                    <div className="bg-slate-100 p-3 rounded-xl border border-slate-200 text-[11px]">
+                      <span className="font-bold text-slate-800 block mb-1">Legenda Highlight Parameter:</span>
+                      <div className="flex flex-wrap gap-1">
+                        {Object.keys(highlightConfig).map(key => {
+                          const item = highlightConfig[key];
+                          return (
+                            <span key={key} className="px-1.5 py-0.5 rounded text-[10px] font-bold border" style={{ backgroundColor: item.bg, color: item.text, borderColor: item.border }}>
+                              {item.label}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
